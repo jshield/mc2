@@ -89,5 +89,11 @@ include_directories(${THIRDPARTY_INCLUDE_DIRS})
 add_definitions(-DBGR)
 add_library(mclib ${SOURCES})
 
+if(BUILD_TESTING)
+	add_executable(msl_texture_regression msl_texture_regression.cpp msl.cpp)
+	target_link_libraries(msl_texture_regression mclib gosfx mlr stuff gui gameos gameos_main windows ZLIB::ZLIB ${SDL2_LIBRARIES} GLEW::GLEW SDL2_mixer::SDL2_mixer ${ADDITIONAL_LIBS} OpenGL::GL)
+	add_test(NAME msl_texture_regression COMMAND msl_texture_regression)
+endif()
+
 # cat MCLib.vcproj | grep ".cpp" | perl -pe 's/.+\"(\w+\.cpp)\".+/\1/g' >> CMakeLists.txt
 

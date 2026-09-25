@@ -250,6 +250,7 @@ class TG_MultiShape
 		TG_TypeMultiShapePtr	myMultiType;			//Pointer to the type
 		int                     numTG_Shapes;			//Number of TG_Shapes
 		TG_ShapeRecPtr			listOfShapes;			//Memory holding all TG_ShapeRecs
+		TG_TinyTexturePtr		listOfTextures;			//List of texture structures local to this instance.
 		float					frameNum;				//Frame number of animation
 		bool					d_useShadows;
 		bool					isHudElement;
@@ -269,7 +270,7 @@ class TG_MultiShape
 			myMultiType = NULL;
 			numTG_Shapes = 0;
 			listOfShapes = NULL;
-
+			listOfTextures = NULL;
 			frameNum = 0.0f;
 			d_useShadows = true;
 			
@@ -389,12 +390,20 @@ class TG_MultiShape
 		//textureNum entry of the listOfTextures;
 		long SetTextureHandle (DWORD textureNum, DWORD gosTextureHandle)
 		{
-			return myMultiType->SetTextureHandle(textureNum,gosTextureHandle);
+			if ((myMultiType == NULL) || (textureNum >= myMultiType->numTextures) || (listOfTextures == NULL))
+				return(-1);
+
+			listOfTextures[textureNum].mcTextureNodeIndex = gosTextureHandle;
+			listOfTextures[textureNum].gosTextureHandle = 0xffffffff;
+			return(0);
 		}
 
 		DWORD GetTextureHandle (DWORD textureNum)
 		{
-			return myMultiType->GetTextureHandle(textureNum);
+			if ((myMultiType == NULL) || (textureNum >= myMultiType->numTextures) || (listOfTextures == NULL))
+				return 0xffffffff;
+
+			return listOfTextures[textureNum].mcTextureNodeIndex;
 		}
 
 		float GetExtentRadius (void)
@@ -417,7 +426,11 @@ class TG_MultiShape
 		//textureNum entry of the listOfTextures;
 		long SetTextureAlpha (DWORD textureNum, bool alphaFlag)
 		{
-			return myMultiType->SetTextureAlpha(textureNum,alphaFlag);
+			if ((myMultiType == NULL) || (textureNum >= myMultiType->numTextures) || (listOfTextures == NULL))
+				return(-1);
+
+			listOfTextures[textureNum].textureAlpha = alphaFlag;
+			return(0);
 		}
 
 		Stuff::Point3D GetRootNodeCenter (void)

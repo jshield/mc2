@@ -172,6 +172,25 @@ TG_MultiShapePtr TG_TypeMultiShape::CreateFrom (void)
 	newShape->frameNum = 0.0f;
 
 	newShape->myMultiType = this;
+
+	newShape->listOfTextures = NULL;
+	if (numTextures)
+	{
+		newShape->listOfTextures = (TG_TinyTexturePtr)TG_Shape::tglHeap->Malloc(sizeof(TG_TinyTexture) * numTextures);
+		gosASSERT(newShape->listOfTextures != NULL);
+		if (newShape->listOfTextures == NULL)
+		{
+			delete newShape;
+			return NULL;
+		}
+
+		for (long i=0;i<numTextures;i++)
+		{
+			newShape->listOfTextures[i].mcTextureNodeIndex = listOfTextures[i].mcTextureNodeIndex;
+			newShape->listOfTextures[i].gosTextureHandle = 0xffffffff;
+			newShape->listOfTextures[i].textureAlpha = listOfTextures[i].textureAlpha;
+		}
+	}
 	
 	newShape->isHudElement = false;
 	
@@ -360,6 +379,10 @@ void TG_MultiShape::destroy (void)
 	if (listOfShapes)
 		TG_Shape::tglHeap->Free(listOfShapes);
 	listOfShapes = NULL;	
+	if (listOfTextures)
+		TG_Shape::tglHeap->Free(listOfTextures);
+	listOfTextures = NULL;
+
 
 	numTG_Shapes = 0;
 }	
@@ -1320,8 +1343,8 @@ long TG_MultiShape::TransformMultiShape (Stuff::Point3D *pos, Stuff::UnitQuatern
         // Must set each transform!  Animating Textures!
         for (long j=0;j<myMultiType->numTextures;j++)
         {
-            listOfShapes[i].node->myType->SetTextureHandle(j,myMultiType->listOfTextures[j].mcTextureNodeIndex);
-            listOfShapes[i].node->myType->SetTextureAlpha(j,myMultiType->listOfTextures[j].textureAlpha); 
+            listOfShapes[i].node->myType->SetTextureHandle(j,listOfTextures[j].mcTextureNodeIndex);
+            listOfShapes[i].node->myType->SetTextureAlpha(j,listOfTextures[j].textureAlpha);
         }
 
         //-----------------------------------------------------------------
@@ -1668,15 +1691,12 @@ void TG_MultiShape::Render (bool refreshTextures, float forceZ)
 	{
 		if (listOfShapes[i].processMe && listOfShapes[i].node)
 		{
-			//-------------------------------------------------------
-			// Only need to due for unique instance items like mechs
-			if (refreshTextures)
+			//----------------------------------------------
+			// Must set each transform! Animating textures!
+			for (long j=0;j<myMultiType->numTextures;j++)
 			{
-				for (long j=0;j<myMultiType->numTextures;j++)
-				{
-					listOfShapes[i].node->myType->SetTextureHandle(j,myMultiType->listOfTextures[j].mcTextureNodeIndex);
-					listOfShapes[i].node->myType->SetTextureAlpha(j,myMultiType->listOfTextures[j].textureAlpha); 
-				}
+				listOfShapes[i].node->myType->SetTextureHandle(j,listOfTextures[j].mcTextureNodeIndex);
+				listOfShapes[i].node->myType->SetTextureAlpha(j,listOfTextures[j].textureAlpha);
 			}
 
 			Stuff::Matrix4D  shapeToClip;
@@ -1698,15 +1718,12 @@ void TG_MultiShape::RenderShadows (bool refreshTextures)
 	{
 		if (listOfShapes[i].processMe && listOfShapes[i].node)
 		{
-			//-------------------------------------------------------
-			// Only need to due for unique instance items like mechs
-			if (refreshTextures)
+			//----------------------------------------------
+			// Must set each transform! Animating textures!
+			for (long j=0;j<myMultiType->numTextures;j++)
 			{
-				for (long j=0;j<myMultiType->numTextures;j++)
-				{
-					listOfShapes[i].node->myType->SetTextureHandle(j,myMultiType->listOfTextures[j].mcTextureNodeIndex);
-					listOfShapes[i].node->myType->SetTextureAlpha(j,myMultiType->listOfTextures[j].textureAlpha); 
-				}
+				listOfShapes[i].node->myType->SetTextureHandle(j,listOfTextures[j].mcTextureNodeIndex);
+				listOfShapes[i].node->myType->SetTextureAlpha(j,listOfTextures[j].textureAlpha);
 			}
 
 			start = listOfShapes[i].node->RenderShadows(start);
@@ -1816,6 +1833,25 @@ TG_MultiShapePtr TG_MultiShape::Detach (const char *nodeName)
 	gosASSERT(resultShape->listOfShapes != NULL);
 
 	memset(resultShape->listOfShapes,0,sizeof(TG_ShapeRec) * curShape);
+
+	resultShape->listOfTextures = NULL;
+	if (myMultiType->numTextures)
+	{
+		resultShape->listOfTextures = (TG_TinyTexturePtr)TG_Shape::tglHeap->Malloc(sizeof(TG_TinyTexture) * myMultiType->numTextures);
+		gosASSERT(resultShape->listOfTextures != NULL);
+		if (resultShape->listOfTextures == NULL)
+		{
+			delete resultShape;
+			return NULL;
+		}
+
+		for (i=0;i<myMultiType->numTextures;i++)
+		{
+			resultShape->listOfTextures[i].mcTextureNodeIndex = listOfTextures[i].mcTextureNodeIndex;
+			resultShape->listOfTextures[i].gosTextureHandle = 0xffffffff;
+			resultShape->listOfTextures[i].textureAlpha = listOfTextures[i].textureAlpha;
+		}
+	}
 
 	resultShape->frameNum = 0;
 	
