@@ -1687,8 +1687,10 @@ long TG_MultiShape::TransformMultiShape (Stuff::Point3D *pos, Stuff::UnitQuatern
 //gos_DrawTriangle.
 void TG_MultiShape::Render (bool refreshTextures, float forceZ)
 {
+	// Callers still pass refreshTextures. Instance state is always copied:
+	// another unit can overwrite the shared node between transform and draw.
+	(void)refreshTextures;
 	for (long i=0;i<numTG_Shapes;i++)
-	{
 		if (listOfShapes[i].processMe && listOfShapes[i].node)
 		{
 			//----------------------------------------------
@@ -1705,7 +1707,6 @@ void TG_MultiShape::Render (bool refreshTextures, float forceZ)
             Stuff::Matrix4D shape2world(listOfShapes[i].shapeToWorld);
 			listOfShapes[i].node->Render(forceZ,isHudElement,alphaValue,isClamped, &shapeToClip, &shape2world);
 		}
-	}
 }	
 
 //-------------------------------------------------------------------------------
@@ -1713,6 +1714,7 @@ void TG_MultiShape::Render (bool refreshTextures, float forceZ)
 //gos_DrawTriangle.
 void TG_MultiShape::RenderShadows (bool refreshTextures)
 {
+	(void)refreshTextures;
 	long start = 0;
 	for (long i=0;i<numTG_Shapes;i++)
 	{

@@ -2,7 +2,10 @@ cmake_minimum_required (VERSION 3.10)
 # select GLVND versus legacy OpenGL libraries
 cmake_policy(SET CMP0072 NEW) # cmake --help-policy CMP0072
 project(mc2)
-include(CTest)
+option(BUILD_TESTING "Build optional regression tests" OFF)
+if(BUILD_TESTING)
+	enable_testing()
+endif()
 
 include(CMakeToolsHelpers OPTIONAL)
 
@@ -15,7 +18,6 @@ include(CMakeToolsHelpers OPTIONAL)
 message("CMAKE library architecture: ${CMAKE_LIBRARY_ARCHITECTURE}")
 
 if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-
 	message(STATUS "Target is 64 bits")
 	set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS TRUE)
 else("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
